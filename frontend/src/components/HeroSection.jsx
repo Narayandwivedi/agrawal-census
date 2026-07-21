@@ -1,5 +1,5 @@
-import heroImg from '../hero (3).png';
-import mobileHeroImg from '../agresen.png';
+import heroImg from '../new hero.avif';
+import mobileHeroImg from '../new agresen.avif';
 
 export default function HeroSection() {
   return (
