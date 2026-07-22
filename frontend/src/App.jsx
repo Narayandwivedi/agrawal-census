@@ -1,11 +1,9 @@
-import { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Home from './components/Home';
 import AddSamajPage from './components/AddSamajPage';
+import FamilyPage from './components/FamilyPage';
 
 function App() {
-  const [page, setPage] = useState('add-samaj');
-
   return (
     <>
       <Toaster
@@ -14,11 +12,10 @@ function App() {
         gutter={8}
         toastOptions={{ duration: 3500 }}
       />
-      {page === 'home' ? (
-        <Home onNavigate={setPage} />
-      ) : (
-        <AddSamajPage onNavigate={setPage} />
-      )}
+      <Routes>
+        <Route path="/" element={<AddSamajPage />} />
+        <Route path="/family" element={<FamilyPage />} />
+      </Routes>
     </>
   );
 }

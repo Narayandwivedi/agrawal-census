@@ -152,8 +152,8 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
     } catch (err) {
       showErrorToast(
         isEditing
-          ? 'Failed to update Samaj. Please try again.'
-          : 'Failed to save Samaj. Please try again.'
+          ? 'Failed To Update Samaj. Please Try Again.'
+          : 'Failed To Save Samaj. Please Try Again.'
       );
     } finally {
       setSubmitting(false);
@@ -174,12 +174,12 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
         </h3>
         <p className="text-sm text-gray-500 mt-2 text-center max-w-xs">
           {isEditing
-            ? 'The Samaj information has been updated successfully.'
-            : 'The Samaj information has been saved successfully.'}
+            ? 'The Samaj Information Has Been Updated Successfully.'
+            : 'The Samaj Information Has Been Saved Successfully.'}
         </p>
         <div className="mt-8 flex items-center gap-2 text-xs text-gray-400">
           <div className="w-4 h-4 border-2 border-gray-300 border-t-indigo-500 rounded-full animate-spin" />
-          Closing automatically...
+          Closing Automatically...
         </div>
       </div>
     );
@@ -198,7 +198,7 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
                 {isEditing ? 'Edit Samaj' : 'Add New Samaj'}
               </h2>
               <p className="text-sm text-indigo-200 mt-0.5">
-                Enter the Samaj information below
+                Enter The Samaj Information Below
               </p>
             </div>
           </div>
@@ -224,14 +224,14 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
                 value={form.samajName}
                 onChange={handleChange}
                 name="samajName"
-                placeholder="Enter samaj name"
+                placeholder="Enter Samaj Name"
               />
               <Input
                 label="Mobile Number"
                 value={form.mobile}
                 onChange={handleChange}
                 name="mobile"
-                placeholder="Enter mobile number"
+                placeholder="Enter Mobile Number"
               />
               <Input
                 label="Email Address"
@@ -239,7 +239,7 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
                 value={form.email}
                 onChange={handleChange}
                 name="email"
-                placeholder="Enter email address"
+                placeholder="Enter Email Address"
               />
             </div>
           </div>
@@ -252,7 +252,7 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
               value={form.officeAddress}
               onChange={handleChange}
               name="officeAddress"
-              placeholder="Enter office address"
+                placeholder="Enter Office Address"
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
@@ -260,28 +260,28 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
                 value={form.city}
                 onChange={handleChange}
                 name="city"
-                placeholder="Enter city"
+                placeholder="Enter City"
               />
               <Input
                 label="District"
                 value={form.district}
                 onChange={handleChange}
                 name="district"
-                placeholder="Enter district"
+                placeholder="Enter District"
               />
               <Input
                 label="State"
                 value={form.state}
                 onChange={handleChange}
                 name="state"
-                placeholder="Enter state"
+                placeholder="Enter State"
               />
               <Input
                 label="Pincode"
                 value={form.pincode}
                 onChange={handleChange}
                 name="pincode"
-                placeholder="Enter pincode"
+                placeholder="Enter Pincode"
               />
             </div>
           </div>
@@ -291,7 +291,7 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-gray-500">
-                {form.leaders.length} leader{form.leaders.length !== 1 ? 's' : ''} added
+                {form.leaders.length} Leader{form.leaders.length !== 1 ? 's' : ''} Added
               </p>
               <button
                 type="button"
@@ -306,13 +306,13 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
             {form.leaders.length === 0 && (
               <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl">
                 <Users size={32} className="mx-auto text-gray-300" />
-                <p className="text-sm text-gray-400 mt-2">No leaders added yet</p>
+                <p className="text-sm text-gray-400 mt-2">No Leaders Added Yet</p>
                 <button
                   type="button"
                   onClick={addLeader}
                   className="mt-2 text-xs text-indigo-500 hover:text-indigo-600 font-semibold cursor-pointer"
                 >
-                  + Add a leader
+                  + Add A Leader
                 </button>
               </div>
             )}
@@ -348,19 +348,19 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
                       label="Designation"
                       value={leader.designation}
                       onChange={(e) => handleLeaderChange(idx, 'designation', e.target.value)}
-                      placeholder="Enter designation"
+                      placeholder="Enter Designation"
                     />
                     <Input
                       label="Name"
                       value={leader.name}
                       onChange={(e) => handleLeaderChange(idx, 'name', e.target.value)}
-                      placeholder="Enter name"
+                      placeholder="Enter Name"
                     />
                     <Input
                       label="Mobile Number"
                       value={leader.mobile}
                       onChange={(e) => handleLeaderChange(idx, 'mobile', e.target.value)}
-                      placeholder="Enter mobile number"
+                placeholder="Enter Mobile Number"
                     />
                   </div>
                 </div>
@@ -376,7 +376,7 @@ export default function SamajForm({ editData, onBack, onSuccess }) {
               value={form.remarks}
               onChange={handleChange}
               name="remarks"
-              placeholder="Enter any additional remarks or notes..."
+              placeholder="Enter Any Additional Remarks Or Notes..."
             />
             <label className="flex items-center gap-2.5 cursor-pointer group">
               <div className={`relative w-10 h-5 rounded-full transition-all duration-200 ${form.isActive ? 'bg-indigo-500' : 'bg-gray-300'}`}>

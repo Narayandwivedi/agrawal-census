@@ -105,7 +105,7 @@ const INDIAN_STATES = [
   'Lakshadweep', 'Puducherry',
 ];
 
-export default function AddSamajPage({ onNavigate }) {
+export default function AddSamajPage() {
   const [form, setForm] = useState({ ...emptyForm });
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -178,19 +178,19 @@ export default function AddSamajPage({ onNavigate }) {
       return;
     }
     if (!form.state.trim()) {
-      showErrorToast('State is required.');
+      showErrorToast('State Is Required.');
       return;
     }
     if (!form.district.trim()) {
-      showErrorToast('District is required.');
+      showErrorToast('District Is Required.');
       return;
     }
     if (!form.city.trim()) {
-      showErrorToast('City is required.');
+      showErrorToast('City Is Required.');
       return;
     }
     if (!form.pincode.trim()) {
-      showErrorToast('Pincode is required.');
+      showErrorToast('Pincode Is Required.');
       return;
     }
     if (!form.contactPersonName.trim()) {
@@ -198,7 +198,7 @@ export default function AddSamajPage({ onNavigate }) {
       return;
     }
     if (!form.designation.trim()) {
-      showErrorToast('Designation is required.');
+      showErrorToast('Designation Is Required.');
       return;
     }
     if (!form.contactPersonMobile.trim()) {
@@ -234,9 +234,9 @@ export default function AddSamajPage({ onNavigate }) {
         isActive: true,
       });
       setShowSuccess(true);
-      showSuccessToast('Samaj registered successfully!');
+      showSuccessToast('Samaj Registered Successfully!');
     } catch (err) {
-      showErrorToast('Failed to save Samaj. Please try again.');
+      showErrorToast('Failed To Save Samaj. Please Try Again.');
     } finally {
       setSubmitting(false);
     }
@@ -254,12 +254,12 @@ export default function AddSamajPage({ onNavigate }) {
               </svg>
             </div>
             <h3 className="text-xl font-bold text-[#4A3520] mt-6">Samaj Registered Successfully!</h3>
-            <p className="text-sm text-gray-500 mt-2">The Samaj information has been saved successfully.</p>
+            <p className="text-sm text-gray-500 mt-2">The Samaj Information Has Been Saved Successfully.</p>
             <button
-              onClick={() => onNavigate && onNavigate('home')}
+              onClick={() => { setShowSuccess(false); setForm({ ...emptyForm }); }}
               className="mt-8 px-8 py-3 rounded-[14px] text-sm font-semibold text-white bg-gradient-to-r from-[#C67A2D] to-[#A8651E] hover:shadow-lg hover:shadow-[#C67A2D]/25 transition-all duration-300 cursor-pointer"
             >
-              Back to Home
+              Register Another Samaj
             </button>
           </div>
         </div>
@@ -275,7 +275,7 @@ export default function AddSamajPage({ onNavigate }) {
           <div className="mb-8">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#4A3520]">Register New Samaj</h1>
             <p className="text-sm sm:text-base text-gray-500 mt-2">
-              Fill in the details below to register a new Samaj in the census portal.
+              Fill In The Details Below To Register A New Samaj In The Census Portal.
             </p>
           </div>
 
@@ -292,7 +292,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.samajName}
                       onChange={handleChange}
                       name="samajName"
-                      placeholder="Enter samaj name"
+                      placeholder="Enter Samaj Name"
                     />
                     <Input
                       label="Samaj Mobile Number"
@@ -300,7 +300,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.mobile}
                       onChange={handleChange}
                       name="mobile"
-                      placeholder="Enter mobile number"
+                      placeholder="Enter Mobile Number"
                     />
                   </div>
                   <Textarea
@@ -309,7 +309,7 @@ export default function AddSamajPage({ onNavigate }) {
                     value={form.officeAddress}
                     onChange={handleChange}
                     name="officeAddress"
-                    placeholder="Enter office address"
+                      placeholder="Enter Office Address"
                   />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <Input
@@ -318,14 +318,14 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.email}
                       onChange={handleChange}
                       name="email"
-                      placeholder="Enter email address"
+                      placeholder="Enter Email Address"
                     />
                     <Input
                       label="Samaj Landline"
                       value={form.landline}
                       onChange={handleChange}
                       name="landline"
-                      placeholder="Enter landline number (optional)"
+                      placeholder="Enter Landline Number (Optional)"
                     />
                   </div>
                 </div>
@@ -352,7 +352,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.district}
                       onChange={handleChange}
                       name="district"
-                      placeholder="Enter district"
+                      placeholder="Enter District"
                     />
                     <Input
                       label="City"
@@ -360,7 +360,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.city}
                       onChange={handleChange}
                       name="city"
-                      placeholder="Enter city"
+                      placeholder="Enter City"
                     />
                     <Input
                       label="Pincode"
@@ -368,7 +368,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.pincode}
                       onChange={handleChange}
                       name="pincode"
-                      placeholder="Enter pincode"
+                      placeholder="Enter Pincode"
                     />
                   </div>
                 </SectionCard>
@@ -387,7 +387,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.contactPersonName}
                       onChange={handleChange}
                       name="contactPersonName"
-                      placeholder="Enter contact person name"
+                      placeholder="Enter Contact Person Name"
                     />
                     <Input
                       label="Designation"
@@ -395,7 +395,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.designation}
                       onChange={handleChange}
                       name="designation"
-                      placeholder="Enter designation"
+                      placeholder="Enter Designation"
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -405,7 +405,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.contactPersonMobile}
                       onChange={handleChange}
                       name="contactPersonMobile"
-                      placeholder="Enter mobile number"
+                      placeholder="Enter Mobile Number"
                     />
                     <Input
                       label="Email Address"
@@ -413,7 +413,7 @@ export default function AddSamajPage({ onNavigate }) {
                       value={form.contactPersonEmail}
                       onChange={handleChange}
                       name="contactPersonEmail"
-                      placeholder="Enter email address"
+                      placeholder="Enter Email Address"
                     />
                   </div>
                   <Input
@@ -421,7 +421,7 @@ export default function AddSamajPage({ onNavigate }) {
                     value={form.alternateMobile}
                     onChange={handleChange}
                     name="alternateMobile"
-                    placeholder="Enter alternate mobile (optional)"
+                    placeholder="Enter Alternate Mobile (Optional)"
                     className="max-w-md"
                   />
                 </div>
@@ -438,7 +438,7 @@ export default function AddSamajPage({ onNavigate }) {
                     value={form.registrationNumber}
                     onChange={handleChange}
                     name="registrationNumber"
-                    placeholder="Enter registration number"
+                    placeholder="Enter Registration Number"
                   />
                   <Input
                     label="Establishment Year"
@@ -482,7 +482,7 @@ export default function AddSamajPage({ onNavigate }) {
                     value={form.remarks}
                     onChange={handleChange}
                     name="remarks"
-                    placeholder="Enter any additional remarks or notes..."
+                    placeholder="Enter Any Additional Remarks Or Notes..."
                   />
                 </SectionCard>
               </div>
@@ -513,7 +513,7 @@ export default function AddSamajPage({ onNavigate }) {
                   />
                   <div className="text-4xl mb-4">📤</div>
                   <p className="text-sm font-semibold text-gray-700">
-                    Drag & Drop files here or <span className="text-[#C67A2D] underline decoration-dashed underline-offset-2">Click to Upload</span>
+                    Drag & Drop Files Here Or <span className="text-[#C67A2D] underline decoration-dashed underline-offset-2">Click To Upload</span>
                   </p>
                   <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-400">
                     <span>Allowed: JPG, PNG, PDF</span>
