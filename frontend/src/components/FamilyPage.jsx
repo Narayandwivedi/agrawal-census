@@ -1,6 +1,21 @@
 import { useState } from 'react';
 import { createFamily } from '../services/storage';
 import { showSuccessToast, showErrorToast } from './ToastContent';
+import { Users, UserPlus, Trash2, MessageSquare } from 'lucide-react';
+
+const RELATION_OPTIONS = [
+  'Self', 'Husband', 'Wife', 'Son', 'Daughter', 'Father', 'Mother',
+  'Brother', 'Sister', 'Grandfather', 'Grandmother', 'Uncle', 'Aunt', 'Other'
+];
+
+const emptyMember = () => ({
+  name: '',
+  relation: '',
+  mobile: '',
+  age: '',
+  gender: '',
+  occupation: '',
+});
 
 const INDIAN_STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -100,6 +115,7 @@ export default function FamilyPage() {
     gotra: '',
     kulVansh: '',
     otherInfo: '',
+    members: [],
   });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -113,6 +129,23 @@ export default function FamilyPage() {
         return next;
       });
     }
+  };
+
+  const handleMemberChange = (index, field, value) => {
+    const updated = [...form.members];
+    updated[index] = { ...updated[index], [field]: value };
+    setForm((prev) => ({ ...prev, members: updated }));
+  };
+
+  const addMember = () => {
+    setForm((prev) => ({ ...prev, members: [...prev.members, emptyMember()] }));
+  };
+
+  const removeMember = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      members: prev.members.filter((_, i) => i !== index),
+    }));
   };
 
   const validate = () => {
@@ -157,6 +190,10 @@ export default function FamilyPage() {
         gotra: form.gotra,
         kulVansh: form.kulVansh,
         otherInfo: form.otherInfo,
+        members: form.members.map((m) => ({
+          ...m,
+          age: m.age ? Number(m.age) : '',
+        })),
         isActive: true,
       });
       showSuccessToast('Family Registered Successfully!');
@@ -178,6 +215,7 @@ export default function FamilyPage() {
         gotra: '',
         kulVansh: '',
         otherInfo: '',
+        members: [],
       });
     } catch (err) {
       showErrorToast('Failed To Save Family. Please Try Again.');
@@ -205,6 +243,7 @@ export default function FamilyPage() {
       gotra: '',
       kulVansh: '',
       otherInfo: '',
+      members: [],
     });
     setErrors({});
   };
@@ -377,6 +416,146 @@ export default function FamilyPage() {
                 onChange={(e) => handleChange('otherInfo', e.target.value)}
                 placeholder="Enter Any Other Info (Optional)"
               />
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Family Members">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400">
+                  {form.members.length} member{form.members.length !== 1 ? 's' : ''} added
+                </span>
+                <button
+                  type="button"
+                  onClick={addMember}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
+                >
+                  <UserPlus size={14} />
+                  Add Member
+                </button>
+              </div>
+
+              {form.members.length === 0 && (
+                <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl">
+                  <Users size={32} className="mx-auto text-gray-300" />
+                  <p className="text-sm text-gray-400 mt-2">No members added yet</p>
+                  <button
+                    type="button"
+                    onClick={addMember}
+                    className="mt-2 text-xs text-[#C67A2D] hover:text-[#A8651E] font-semibold cursor-pointer"
+                  >
+                    + Add a member
+                  </button>
+                </div>
+              )}
+
+              {form.members.map((member, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 hover:border-gray-300 hover:shadow-sm animate-fade-in"
+                >
+                  <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#FFF8F0] to-white border-b border-gray-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C67A2D] to-[#A8651E] flex items-center justify-center shadow-sm">
+                        <span className="text-xs font-bold text-white">{idx + 1}</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700">
+                        Member {idx + 1}
+                      </span>
+                    </div>
+                    {form.members.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeMember(idx)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 cursor-pointer"
+                      >
+                        <Trash2 size={13} />
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="p-5 flex flex-col gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Input
+                        label="Member Name"
+                        value={member.name}
+                        onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
+                        placeholder="Enter member name"
+                      />
+                      <Select
+                        label="Relation"
+                        value={member.relation}
+                        onChange={(e) => handleMemberChange(idx, 'relation', e.target.value)}
+                      >
+                        <option value="">-- Select Relation --</option>
+                        {RELATION_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <Input
+                        label="Mobile Number"
+                        type="tel"
+                        value={member.mobile}
+                        onChange={(e) => handleMemberChange(idx, 'mobile', e.target.value)}
+                        placeholder="Enter mobile number"
+                      />
+                      <Input
+                        label="Age"
+                        type="number"
+                        min="0"
+                        value={member.age}
+                        onChange={(e) => handleMemberChange(idx, 'age', e.target.value)}
+                        placeholder="Enter age"
+                      />
+                      <Select
+                        label="Gender"
+                        value={member.gender}
+                        onChange={(e) => handleMemberChange(idx, 'gender', e.target.value)}
+                      >
+                        <option value="">-- Select Gender --</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </Select>
+                    </div>
+                    <Input
+                      label="Occupation"
+                      value={member.occupation}
+                      onChange={(e) => handleMemberChange(idx, 'occupation', e.target.value)}
+                      placeholder="Enter occupation"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Remarks & Status">
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 gap-5">
+                <Textarea
+                  label="Remarks"
+                  value={form.remarks}
+                  onChange={(e) => handleChange('remarks', e.target.value)}
+                  placeholder="Enter any additional remarks or notes..."
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="relative w-11 h-6 rounded-full bg-[#C67A2D] transition-all duration-200">
+                  <div className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-200 translate-x-[22px]" />
+                  <input
+                    name="isActive"
+                    type="checkbox"
+                    checked={true}
+                    readOnly
+                    className="sr-only"
+                  />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Active Status</span>
+              </div>
             </div>
           </SectionCard>
 

@@ -8,7 +8,6 @@ const emptyForm = {
   officeAddress: '',
   mobile: '',
   email: '',
-  landline: '',
   state: '',
   district: '',
   city: '',
@@ -166,15 +165,15 @@ export default function AddSamajPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.samajName.trim()) {
-      showErrorToast('Samaj Name is required.');
+      showErrorToast('Samaj Name Is Required.');
       return;
     }
     if (!form.officeAddress.trim()) {
-      showErrorToast('Office Address is required.');
+      showErrorToast('Office Address Is Required.');
       return;
     }
     if (!form.mobile.trim()) {
-      showErrorToast('Mobile Number is required.');
+      showErrorToast('Mobile Number Is Required.');
       return;
     }
     if (!form.state.trim()) {
@@ -213,7 +212,6 @@ export default function AddSamajPage() {
         officeAddress: form.officeAddress,
         mobile: form.mobile,
         email: form.email,
-        landline: form.landline,
         state: form.state,
         district: form.district,
         city: form.city,
@@ -320,13 +318,7 @@ export default function AddSamajPage() {
                       name="email"
                       placeholder="Enter Email Address"
                     />
-                    <Input
-                      label="Samaj Landline"
-                      value={form.landline}
-                      onChange={handleChange}
-                      name="landline"
-                      placeholder="Enter Landline Number (Optional)"
-                    />
+
                   </div>
                 </div>
               </SectionCard>
