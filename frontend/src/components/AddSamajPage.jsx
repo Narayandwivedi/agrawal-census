@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { createSamaj } from '../services/storage';
 import { showSuccessToast, showErrorToast } from './ToastContent';
 import { UserPlus, Trash2 } from 'lucide-react';
@@ -10,6 +10,13 @@ const emptyContactPerson = () => ({
   mobile: '',
   email: '',
   alternateMobile: '',
+});
+
+const emptyDocumentSlot = () => ({
+  file: null,
+  name: '',
+  size: 0,
+  type: '',
 });
 
 const emptyForm = {
@@ -26,7 +33,7 @@ const emptyForm = {
   establishmentYear: '',
   website: '',
   remarks: '',
-  documents: [],
+  documents: [emptyDocumentSlot()],
 };
 
 function Input({ label, required, className, ...props }) {
@@ -111,8 +118,6 @@ export default function AddSamajPage() {
   const [form, setForm] = useState({ ...emptyForm });
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInputRef = useRef(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -120,7 +125,7 @@ export default function AddSamajPage() {
   };
 
   const handleReset = () => {
-    setForm({ ...emptyForm, contactPersons: [emptyContactPerson()] });
+    setForm({ ...emptyForm, contactPersons: [emptyContactPerson()], documents: [emptyDocumentSlot()] });
   };
 
   const handleContactPersonChange = (index, field, value) => {
@@ -143,39 +148,26 @@ export default function AddSamajPage() {
     }));
   };
 
-  const handleFileSelect = useCallback((files) => {
-    const validFiles = Array.from(files).filter((f) => {
-      const ext = f.name.split('.').pop().toLowerCase();
-      return ['jpg', 'jpeg', 'png', 'pdf'].includes(ext) && f.size <= 5 * 1024 * 1024;
-    });
-    if (validFiles.length > 0) {
-      setForm((prev) => ({
-        ...prev,
-        documents: [...prev.documents, ...validFiles.map((f) => f.name)],
-      }));
-      showSuccessToast(`${validFiles.length} file(s) added`);
+  const handleDocumentFile = (index, file) => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['jpg', 'jpeg', 'png', 'pdf'].includes(ext)) {
+      showErrorToast('Only JPG, PNG, and PDF files are allowed.');
+      return;
     }
-  }, []);
-
-  const handleDrop = useCallback(
-    (e) => {
-      e.preventDefault();
-      setDragOver(false);
-      handleFileSelect(e.dataTransfer.files);
-    },
-    [handleFileSelect]
-  );
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setDragOver(true);
+    if (file.size > 5 * 1024 * 1024) {
+      showErrorToast('File size must be 5 MB or less.');
+      return;
+    }
+    const updated = [...form.documents];
+    updated[index] = { file, name: file.name, size: file.size, type: ext.toUpperCase() };
+    setForm((prev) => ({ ...prev, documents: updated }));
   };
 
-  const handleDragLeave = () => setDragOver(false);
-
-  const handleFileInputChange = (e) => {
-    handleFileSelect(e.target.files);
-    e.target.value = '';
+  const addDocument = () => {
+    setForm((prev) => ({
+      ...prev,
+      documents: [...prev.documents, emptyDocumentSlot()],
+    }));
   };
 
   const removeDocument = (idx) => {
@@ -183,6 +175,12 @@ export default function AddSamajPage() {
       ...prev,
       documents: prev.documents.filter((_, i) => i !== idx),
     }));
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const handleSubmit = async (e) => {
@@ -323,15 +321,16 @@ export default function AddSamajPage() {
                       placeholder="Enter Mobile Number"
                     />
                   </div>
-                  <Textarea
-                    label="Samaj Office Address"
-                    required
-                    value={form.officeAddress}
-                    onChange={handleChange}
-                    name="officeAddress"
+                  {/* Desktop (lg+) */}
+                  <div className="hidden lg:grid lg:grid-cols-2 lg:gap-5">
+                    <Textarea
+                      label="Samaj Office Address"
+                      required
+                      value={form.officeAddress}
+                      onChange={handleChange}
+                      name="officeAddress"
                       placeholder="Enter Office Address"
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    />
                     <Input
                       label="Samaj Email"
                       type="email"
@@ -340,7 +339,28 @@ export default function AddSamajPage() {
                       name="email"
                       placeholder="Enter Email Address"
                     />
+                  </div>
 
+                  {/* Tablet/Mobile (<lg) */}
+                  <div className="lg:hidden flex flex-col gap-5">
+                    <Textarea
+                      label="Samaj Office Address"
+                      required
+                      value={form.officeAddress}
+                      onChange={handleChange}
+                      name="officeAddress"
+                      placeholder="Enter Office Address"
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <Input
+                        label="Samaj Email"
+                        type="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        name="email"
+                        placeholder="Enter Email Address"
+                      />
+                    </div>
                   </div>
                 </div>
               </SectionCard>
@@ -434,46 +454,92 @@ export default function AddSamajPage() {
                       )}
 
                       <div className="p-5 flex flex-col gap-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Desktop layout (lg+) */}
+                        <div className="hidden lg:flex lg:flex-col lg:gap-4">
+                          <div className="grid grid-cols-3 gap-4">
+                            <Input
+                              label="Full Name"
+                              required
+                              value={cp.name}
+                              onChange={(e) => handleContactPersonChange(idx, 'name', e.target.value)}
+                              placeholder="Enter full name"
+                            />
+                            <Input
+                              label="Designation"
+                              required
+                              value={cp.designation}
+                              onChange={(e) => handleContactPersonChange(idx, 'designation', e.target.value)}
+                              placeholder="Enter designation"
+                            />
+                            <Input
+                              label="Mobile Number"
+                              required
+                              type="tel"
+                              value={cp.mobile}
+                              onChange={(e) => handleContactPersonChange(idx, 'mobile', e.target.value)}
+                              placeholder="Enter mobile number"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <Input
+                              label="Email Address"
+                              type="email"
+                              value={cp.email}
+                              onChange={(e) => handleContactPersonChange(idx, 'email', e.target.value)}
+                              placeholder="Enter email address"
+                            />
+                            <Input
+                              label="Alternate Mobile"
+                              value={cp.alternateMobile}
+                              onChange={(e) => handleContactPersonChange(idx, 'alternateMobile', e.target.value)}
+                              placeholder="Enter alternate mobile (Optional)"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Tablet/Mobile layout (<lg) */}
+                        <div className="lg:hidden flex flex-col gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Input
+                              label="Full Name"
+                              required
+                              value={cp.name}
+                              onChange={(e) => handleContactPersonChange(idx, 'name', e.target.value)}
+                              placeholder="Enter full name"
+                            />
+                            <Input
+                              label="Designation"
+                              required
+                              value={cp.designation}
+                              onChange={(e) => handleContactPersonChange(idx, 'designation', e.target.value)}
+                              placeholder="Enter designation"
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Input
+                              label="Mobile Number"
+                              required
+                              type="tel"
+                              value={cp.mobile}
+                              onChange={(e) => handleContactPersonChange(idx, 'mobile', e.target.value)}
+                              placeholder="Enter mobile number"
+                            />
+                            <Input
+                              label="Email Address"
+                              type="email"
+                              value={cp.email}
+                              onChange={(e) => handleContactPersonChange(idx, 'email', e.target.value)}
+                              placeholder="Enter email address"
+                            />
+                          </div>
                           <Input
-                            label="Full Name"
-                            required
-                            value={cp.name}
-                            onChange={(e) => handleContactPersonChange(idx, 'name', e.target.value)}
-                            placeholder="Enter full name"
-                          />
-                          <Input
-                            label="Designation"
-                            required
-                            value={cp.designation}
-                            onChange={(e) => handleContactPersonChange(idx, 'designation', e.target.value)}
-                            placeholder="Enter designation"
+                            label="Alternate Mobile"
+                            value={cp.alternateMobile}
+                            onChange={(e) => handleContactPersonChange(idx, 'alternateMobile', e.target.value)}
+                            placeholder="Enter alternate mobile (Optional)"
+                            className="max-w-md"
                           />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Input
-                            label="Mobile Number"
-                            required
-                            type="tel"
-                            value={cp.mobile}
-                            onChange={(e) => handleContactPersonChange(idx, 'mobile', e.target.value)}
-                            placeholder="Enter mobile number"
-                          />
-                          <Input
-                            label="Email Address"
-                            type="email"
-                            value={cp.email}
-                            onChange={(e) => handleContactPersonChange(idx, 'email', e.target.value)}
-                            placeholder="Enter email address"
-                          />
-                        </div>
-                        <Input
-                          label="Alternate Mobile"
-                          value={cp.alternateMobile}
-                          onChange={(e) => handleContactPersonChange(idx, 'alternateMobile', e.target.value)}
-                          placeholder="Enter alternate mobile (Optional)"
-                          className="max-w-md"
-                        />
                       </div>
                     </div>
                   ))}
@@ -531,65 +597,98 @@ export default function AddSamajPage() {
             <div>
               <SectionHeader icon="📎" title="Documents (Optional)" />
               <SectionCard title="Upload Documents">
-                <div
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200 ${
-                    dragOver
-                      ? 'border-[#C67A2D] bg-[#C67A2D]/5'
-                      : 'border-gray-200 hover:border-[#C67A2D]/40 hover:bg-gray-50'
-                  }`}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={handleFileInputChange}
-                    className="hidden"
-                  />
-                  <div className="text-4xl mb-4">📤</div>
-                  <p className="text-sm font-semibold text-gray-700">
-                    Drag & Drop Files Here Or <span className="text-[#C67A2D] underline decoration-dashed underline-offset-2">Click To Upload</span>
-                  </p>
-                  <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-400">
-                    <span>Allowed: JPG, PNG, PDF</span>
-                    <span className="w-px h-3 bg-gray-300" />
-                    <span>Max Size: 5 MB</span>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">
+                      {form.documents.length} document{form.documents.length !== 1 ? 's' : ''}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={addDocument}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                      Add Document
+                    </button>
                   </div>
-                </div>
 
-                {form.documents.length > 0 && (
-                  <div className="mt-5 space-y-2">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Uploaded Files ({form.documents.length})
-                    </p>
-                    {form.documents.map((doc, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-100"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <svg className="w-4 h-4 flex-shrink-0 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  {form.documents.map((doc, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 hover:border-gray-300 hover:shadow-sm animate-fade-in"
+                    >
+                      <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#FFF8F0] to-white border-b border-gray-100">
+                        <div className="flex items-center gap-2.5">
+                          <svg className="w-4 h-4 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                           </svg>
-                          <span className="text-sm text-gray-700 truncate">{doc}</span>
+                          <span className="text-sm font-semibold text-gray-700">
+                            Document {idx + 1}
+                          </span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); removeDocument(idx); }}
-                          className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                        {form.documents.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeDocument(idx)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 cursor-pointer"
+                          >
+                            <Trash2 size={13} />
+                            Remove
+                          </button>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      <div className="p-5">
+                        {doc.file ? (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className="w-10 h-10 rounded-lg bg-[#FFF8F0] flex items-center justify-center flex-shrink-0">
+                                <svg className="w-5 h-5 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-xs text-gray-400">{formatFileSize(doc.size)}</span>
+                                  <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-orange-100 text-[#C67A2D]">
+                                    {doc.type}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0">
+                              <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                              </svg>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C67A2D]/40 hover:bg-gray-50/50 transition-all duration-200">
+                            <input
+                              type="file"
+                              accept=".jpg,.jpeg,.png,.pdf"
+                              onChange={(e) => {
+                                if (e.target.files[0]) handleDocumentFile(idx, e.target.files[0]);
+                                e.target.value = '';
+                              }}
+                              className="hidden"
+                            />
+                            <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                            </svg>
+                            <p className="text-sm text-gray-500">
+                              <span className="text-[#C67A2D] font-semibold">Click to upload</span> or drag and drop
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">JPG, PNG, PDF (max 5 MB)</p>
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </SectionCard>
             </div>
 
