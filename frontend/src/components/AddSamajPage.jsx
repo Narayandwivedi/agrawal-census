@@ -34,6 +34,9 @@ const emptyForm = {
   website: '',
   remarks: '',
   documents: [emptyDocumentSlot()],
+  submittedBy: '',
+  submittedByMobile: '',
+  samajLogo: null,
 };
 
 function Input({ label, required, className, ...props }) {
@@ -125,7 +128,7 @@ export default function AddSamajPage() {
   };
 
   const handleReset = () => {
-    setForm({ ...emptyForm, contactPersons: [emptyContactPerson()], documents: [emptyDocumentSlot()] });
+    setForm({ ...emptyForm, contactPersons: [emptyContactPerson()], documents: [emptyDocumentSlot()], samajLogo: null });
   };
 
   const handleContactPersonChange = (index, field, value) => {
@@ -183,6 +186,30 @@ export default function AddSamajPage() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const handleLogoFile = (file) => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+      showErrorToast('Only JPG, PNG, and WEBP images are allowed for the logo.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showErrorToast('Logo file size must be 5 MB or less.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setForm((prev) => ({
+        ...prev,
+        samajLogo: { file, name: file.name, size: file.size, type: ext.toUpperCase(), preview: e.target.result },
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = () => {
+    setForm((prev) => ({ ...prev, samajLogo: null }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.samajName.trim()) {
@@ -225,6 +252,19 @@ export default function AddSamajPage() {
       }
     }
 
+    if (!form.submittedBy.trim()) {
+      showErrorToast('Submitted By Name Is Required.');
+      return;
+    }
+    if (!form.submittedByMobile.trim()) {
+      showErrorToast('Mobile Number Is Required.');
+      return;
+    }
+    if (!/^\d{10}$/.test(form.submittedByMobile.trim())) {
+      showErrorToast('Please Enter A Valid 10-Digit Mobile Number.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       await createSamaj({
@@ -248,6 +288,9 @@ export default function AddSamajPage() {
         website: form.website,
         remarks: form.remarks,
         documents: form.documents,
+        submittedBy: form.submittedBy,
+        submittedByMobile: form.submittedByMobile,
+        samajLogo: form.samajLogo,
         leaders: [],
         isActive: true,
       });
@@ -420,10 +463,10 @@ export default function AddSamajPage() {
                     <button
                       type="button"
                       onClick={addContactPerson}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
+                      className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
                     >
                       <UserPlus size={14} />
-                      Add Head
+                      Add More Heads
                     </button>
                   </div>
 
@@ -495,6 +538,18 @@ export default function AddSamajPage() {
                               placeholder="Enter alternate mobile (Optional)"
                             />
                           </div>
+                          {idx === 0 && (
+                            <div className="flex items-center justify-end gap-1.5 mt-5">
+                              <button
+                                type="button"
+                                onClick={addContactPerson}
+                                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
+                              >
+                                <UserPlus size={14} />
+                                Add More Heads
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {/* Tablet/Mobile layout (<lg) */}
@@ -596,98 +651,410 @@ export default function AddSamajPage() {
             {/* Section 4: Documents */}
             <div>
               <SectionHeader icon="📎" title="Documents (Optional)" />
-              <SectionCard title="Upload Documents">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
-                      {form.documents.length} document{form.documents.length !== 1 ? 's' : ''}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={addDocument}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                      Add Document
-                    </button>
-                  </div>
 
-                  {form.documents.map((doc, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 hover:border-gray-300 hover:shadow-sm animate-fade-in"
-                    >
-                      <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#FFF8F0] to-white border-b border-gray-100">
-                        <div className="flex items-center gap-2.5">
-                          <svg className="w-4 h-4 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                          </svg>
-                          <span className="text-sm font-semibold text-gray-700">
-                            Document {idx + 1}
-                          </span>
+              {/* Desktop: side by side */}
+              <div className="hidden lg:grid lg:grid-cols-2 lg:gap-5">
+                <SectionCard title="Upload Documents">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">
+                        {form.documents.length} document{form.documents.length !== 1 ? 's' : ''}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={addDocument}
+                        className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add More Documents
+                      </button>
+                    </div>
+
+                    {form.documents.map((doc, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 hover:border-gray-300 hover:shadow-sm animate-fade-in"
+                      >
+                        <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#FFF8F0] to-white border-b border-gray-100">
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                            </svg>
+                            <span className="text-sm font-semibold text-gray-700">
+                              Document {idx + 1}
+                            </span>
+                          </div>
+                          {form.documents.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeDocument(idx)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 cursor-pointer"
+                            >
+                              <Trash2 size={13} />
+                              Remove
+                            </button>
+                          )}
                         </div>
-                        {form.documents.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeDocument(idx)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 cursor-pointer"
-                          >
-                            <Trash2 size={13} />
-                            Remove
-                          </button>
-                        )}
-                      </div>
 
-                      <div className="p-5">
-                        {doc.file ? (
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <div className="w-10 h-10 rounded-lg bg-[#FFF8F0] flex items-center justify-center flex-shrink-0">
-                                <svg className="w-5 h-5 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                </svg>
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-xs text-gray-400">{formatFileSize(doc.size)}</span>
-                                  <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-orange-100 text-[#C67A2D]">
-                                    {doc.type}
-                                  </span>
+                        <div className="p-5">
+                          {doc.file ? (
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className="w-10 h-10 rounded-lg bg-[#FFF8F0] flex items-center justify-center flex-shrink-0">
+                                  <svg className="w-5 h-5 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                  </svg>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-xs text-gray-400">{formatFileSize(doc.size)}</span>
+                                    <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-orange-100 text-[#C67A2D]">
+                                      {doc.type}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
+                              <div className="flex-shrink-0">
+                                <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                              </div>
                             </div>
-                            <div className="flex-shrink-0">
-                              <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          ) : (
+                            <label className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C67A2D]/40 hover:bg-gray-50/50 transition-all duration-200">
+                              <input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.pdf"
+                                onChange={(e) => {
+                                  if (e.target.files[0]) handleDocumentFile(idx, e.target.files[0]);
+                                  e.target.value = '';
+                                }}
+                                className="hidden"
+                              />
+                              <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                               </svg>
+                              <p className="text-sm text-gray-500">
+                                <span className="text-[#C67A2D] font-semibold">Click to upload</span> or drag and drop
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">JPG, PNG, PDF (max 5 MB)</p>
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="hidden lg:flex items-center justify-end gap-1.5 mt-5">
+                      <button
+                        type="button"
+                        onClick={addDocument}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add More Documents
+                      </button>
+                    </div>
+                  </div>
+                </SectionCard>
+
+                <SectionCard title="Upload Samaj Logo">
+                  <div className="flex flex-col gap-4">
+                    {form.samajLogo ? (
+                      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="p-5">
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-28 h-28 rounded-xl border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                              <img
+                                src={form.samajLogo.preview}
+                                alt="Samaj Logo"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <div className="text-center min-w-0">
+                              <p className="text-sm font-medium text-gray-800 truncate max-w-[200px]">
+                                {form.samajLogo.name}
+                              </p>
+                              <div className="flex items-center justify-center gap-2 mt-1">
+                                <span className="text-xs text-gray-400">{formatFileSize(form.samajLogo.size)}</span>
+                                <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-orange-100 text-[#C67A2D]">
+                                  {form.samajLogo.type}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#C67A2D] bg-[#FFF8F0] hover:bg-[#FFF0E0] transition-all duration-200 cursor-pointer">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                                </svg>
+                                Replace
+                                <input
+                                  type="file"
+                                  accept=".jpg,.jpeg,.png,.webp"
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) handleLogoFile(e.target.files[0]);
+                                    e.target.value = '';
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={removeLogo}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 transition-all duration-200 cursor-pointer"
+                              >
+                                <Trash2 size={13} />
+                                Remove
+                              </button>
                             </div>
                           </div>
-                        ) : (
-                          <label className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C67A2D]/40 hover:bg-gray-50/50 transition-all duration-200">
-                            <input
-                              type="file"
-                              accept=".jpg,.jpeg,.png,.pdf"
-                              onChange={(e) => {
-                                if (e.target.files[0]) handleDocumentFile(idx, e.target.files[0]);
-                                e.target.value = '';
-                              }}
-                              className="hidden"
-                            />
-                            <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                            </svg>
-                            <p className="text-sm text-gray-500">
-                              <span className="text-[#C67A2D] font-semibold">Click to upload</span> or drag and drop
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">JPG, PNG, PDF (max 5 MB)</p>
-                          </label>
-                        )}
+                        </div>
                       </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C67A2D]/40 hover:bg-gray-50/50 transition-all duration-200">
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.webp"
+                          onChange={(e) => {
+                            if (e.target.files[0]) handleLogoFile(e.target.files[0]);
+                            e.target.value = '';
+                          }}
+                          className="hidden"
+                        />
+                        <svg className="w-10 h-10 text-gray-300 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                        </svg>
+                        <p className="text-sm text-gray-500">
+                          <span className="text-[#C67A2D] font-semibold">Click to upload</span> Samaj Logo
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP (max 5 MB)</p>
+                      </label>
+                    )}
+                  </div>
+                </SectionCard>
+              </div>
+
+              {/* Tablet/Mobile: stacked */}
+              <div className="lg:hidden flex flex-col gap-5">
+                <SectionCard title="Upload Documents">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">
+                        {form.documents.length} document{form.documents.length !== 1 ? 's' : ''}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={addDocument}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add More Documents
+                      </button>
                     </div>
-                  ))}
+
+                    {form.documents.map((doc, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 hover:border-gray-300 hover:shadow-sm animate-fade-in"
+                      >
+                        <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#FFF8F0] to-white border-b border-gray-100">
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                            </svg>
+                            <span className="text-sm font-semibold text-gray-700">
+                              Document {idx + 1}
+                            </span>
+                          </div>
+                          {form.documents.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeDocument(idx)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 cursor-pointer"
+                            >
+                              <Trash2 size={13} />
+                              Remove
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="p-5">
+                          {doc.file ? (
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className="w-10 h-10 rounded-lg bg-[#FFF8F0] flex items-center justify-center flex-shrink-0">
+                                  <svg className="w-5 h-5 text-[#C67A2D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                  </svg>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-xs text-gray-400">{formatFileSize(doc.size)}</span>
+                                    <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-orange-100 text-[#C67A2D]">
+                                      {doc.type}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                              </div>
+                            </div>
+                          ) : (
+                            <label className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C67A2D]/40 hover:bg-gray-50/50 transition-all duration-200">
+                              <input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.pdf"
+                                onChange={(e) => {
+                                  if (e.target.files[0]) handleDocumentFile(idx, e.target.files[0]);
+                                  e.target.value = '';
+                                }}
+                                className="hidden"
+                              />
+                              <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                              </svg>
+                              <p className="text-sm text-gray-500">
+                                <span className="text-[#C67A2D] font-semibold">Click to upload</span> or drag and drop
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">JPG, PNG, PDF (max 5 MB)</p>
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </SectionCard>
+
+                <SectionCard title="Upload Samaj Logo">
+                  <div className="flex flex-col gap-4">
+                    {form.samajLogo ? (
+                      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="p-5">
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-28 h-28 rounded-xl border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                              <img
+                                src={form.samajLogo.preview}
+                                alt="Samaj Logo"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <div className="text-center min-w-0">
+                              <p className="text-sm font-medium text-gray-800 truncate max-w-[200px]">
+                                {form.samajLogo.name}
+                              </p>
+                              <div className="flex items-center justify-center gap-2 mt-1">
+                                <span className="text-xs text-gray-400">{formatFileSize(form.samajLogo.size)}</span>
+                                <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-orange-100 text-[#C67A2D]">
+                                  {form.samajLogo.type}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#C67A2D] bg-[#FFF8F0] hover:bg-[#FFF0E0] transition-all duration-200 cursor-pointer">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                                </svg>
+                                Replace
+                                <input
+                                  type="file"
+                                  accept=".jpg,.jpeg,.png,.webp"
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) handleLogoFile(e.target.files[0]);
+                                    e.target.value = '';
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={removeLogo}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 transition-all duration-200 cursor-pointer"
+                              >
+                                <Trash2 size={13} />
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C67A2D]/40 hover:bg-gray-50/50 transition-all duration-200">
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.webp"
+                          onChange={(e) => {
+                            if (e.target.files[0]) handleLogoFile(e.target.files[0]);
+                            e.target.value = '';
+                          }}
+                          className="hidden"
+                        />
+                        <svg className="w-10 h-10 text-gray-300 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                        </svg>
+                        <p className="text-sm text-gray-500">
+                          <span className="text-[#C67A2D] font-semibold">Click to upload</span> Samaj Logo
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP (max 5 MB)</p>
+                      </label>
+                    )}
+                  </div>
+                </SectionCard>
+              </div>
+            </div>
+
+            {/* Section 5: Form Submission Details */}
+            <div className="mt-2">
+              <SectionHeader icon="📝" title="Form Submission Details" />
+              <SectionCard title="Submitted By">
+                <div className="hidden lg:grid lg:grid-cols-2 lg:gap-5">
+                  <Input
+                    label="This Form Is Submitted By"
+                    required
+                    value={form.submittedBy}
+                    onChange={handleChange}
+                    name="submittedBy"
+                    placeholder="Enter Full Name"
+                  />
+                  <Input
+                    label="Mobile Number"
+                    required
+                    type="tel"
+                    value={form.submittedByMobile}
+                    onChange={handleChange}
+                    name="submittedByMobile"
+                    placeholder="Enter Mobile Number"
+                  />
+                </div>
+                <div className="lg:hidden flex flex-col gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <Input
+                      label="This Form Is Submitted By"
+                      required
+                      value={form.submittedBy}
+                      onChange={handleChange}
+                      name="submittedBy"
+                      placeholder="Enter Full Name"
+                    />
+                    <Input
+                      label="Mobile Number"
+                      required
+                      type="tel"
+                      value={form.submittedByMobile}
+                      onChange={handleChange}
+                      name="submittedByMobile"
+                      placeholder="Enter Mobile Number"
+                    />
+                  </div>
                 </div>
               </SectionCard>
             </div>
