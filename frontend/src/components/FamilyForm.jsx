@@ -74,8 +74,8 @@ function SectionCard({ icon: Icon, title, children }) {
 function Input({ label, required, icon: Icon, className, ...props }) {
   return (
     <label className="flex flex-col gap-1.5 font-medium text-sm flex-1 min-w-0">
-      <span className="text-gray-600 text-xs font-semibold uppercase tracking-wide">
-        {label} {required && <span className="text-red-400">*</span>}
+      <span className="text-gray-700 text-sm font-semibold">
+        {label} {required && <span className="text-red-500">*</span>}
       </span>
       <div className="relative">
         {Icon && (
@@ -97,8 +97,8 @@ function Input({ label, required, icon: Icon, className, ...props }) {
 function Textarea({ label, required, ...props }) {
   return (
     <label className="flex flex-col gap-1.5 font-medium text-sm flex-1 min-w-0">
-      <span className="text-gray-600 text-xs font-semibold uppercase tracking-wide">
-        {label} {required && <span className="text-red-400">*</span>}
+      <span className="text-gray-700 text-sm font-semibold">
+        {label} {required && <span className="text-red-500">*</span>}
       </span>
       <textarea
         {...props}
@@ -111,8 +111,8 @@ function Textarea({ label, required, ...props }) {
 function Select({ label, required, children, ...props }) {
   return (
     <label className="flex flex-col gap-1.5 font-medium text-sm flex-1 min-w-0">
-      <span className="text-gray-600 text-xs font-semibold uppercase tracking-wide">
-        {label} {required && <span className="text-red-400">*</span>}
+      <span className="text-gray-700 text-sm font-semibold">
+        {label} {required && <span className="text-red-500">*</span>}
       </span>
       <select
         {...props}

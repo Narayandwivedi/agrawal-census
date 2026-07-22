@@ -32,8 +32,8 @@ const INDIAN_STATES = [
 function Input({ label, required, error, className, ...props }) {
   return (
     <label className="flex flex-col gap-1.5 font-medium text-sm flex-1 min-w-0">
-      <span className="text-gray-600 text-xs font-semibold uppercase tracking-wide">
-        {label} {required && <span className="text-red-400">*</span>}
+      <span className="text-gray-700 text-sm font-semibold">
+        {label} {required && <span className="text-red-500">*</span>}
       </span>
       <input
         {...props}
@@ -47,8 +47,8 @@ function Input({ label, required, error, className, ...props }) {
 function Textarea({ label, required, error, ...props }) {
   return (
     <label className="flex flex-col gap-1.5 font-medium text-sm flex-1 min-w-0">
-      <span className="text-gray-600 text-xs font-semibold uppercase tracking-wide">
-        {label} {required && <span className="text-red-400">*</span>}
+      <span className="text-gray-700 text-sm font-semibold">
+        {label} {required && <span className="text-red-500">*</span>}
       </span>
       <textarea
         {...props}
@@ -62,8 +62,8 @@ function Textarea({ label, required, error, ...props }) {
 function Select({ label, required, error, children, ...props }) {
   return (
     <label className="flex flex-col gap-1.5 font-medium text-sm flex-1 min-w-0">
-      <span className="text-gray-600 text-xs font-semibold uppercase tracking-wide">
-        {label} {required && <span className="text-red-400">*</span>}
+      <span className="text-gray-700 text-sm font-semibold">
+        {label} {required && <span className="text-red-500">*</span>}
       </span>
       <select
         {...props}
@@ -310,7 +310,7 @@ export default function FamilyPage() {
                   placeholder="Enter Mobile Number"
                 />
                 <Input
-                  label="Email ID"
+                  label="Email Address"
                   type="email"
                   value={form.email}
                   onChange={(e) => handleChange('email', e.target.value)}
