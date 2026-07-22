@@ -186,10 +186,6 @@ export default function AddSamajPage() {
       showErrorToast('City Is Required.');
       return;
     }
-    if (!form.pincode.trim()) {
-      showErrorToast('Pincode Is Required.');
-      return;
-    }
     if (!form.contactPersonName.trim()) {
       showErrorToast('Contact Person Name is required.');
       return;
@@ -352,11 +348,10 @@ export default function AddSamajPage() {
                     />
                     <Input
                       label="Pincode"
-                      required
                       value={form.pincode}
                       onChange={handleChange}
                       name="pincode"
-                      placeholder="Enter Pincode"
+                      placeholder="Enter Pincode (Optional)"
                     />
                   </div>
                 </SectionCard>

@@ -159,7 +159,6 @@ export default function FamilyPage() {
     if (!form.state) errs.state = 'State Is Required';
     if (!form.district.trim()) errs.district = 'District Is Required';
     if (!form.city.trim()) errs.city = 'City Is Required';
-    if (!form.pincode.trim()) errs.pincode = 'Pincode Is Required';
     if (!form.numberOfMembers || Number(form.numberOfMembers) < 1) errs.numberOfMembers = 'At Least 1 Member Required';
     if (!form.registrationDate) errs.registrationDate = 'Registration Date Is Required';
     return errs;
@@ -365,7 +364,6 @@ export default function FamilyPage() {
                 />
                 <Input
                   label="Pincode"
-                  required
                   error={errors.pincode}
                   value={form.pincode}
                   onChange={(e) => handleChange('pincode', e.target.value)}
