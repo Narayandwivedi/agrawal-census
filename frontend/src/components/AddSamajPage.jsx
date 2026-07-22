@@ -1,7 +1,16 @@
 import { useState, useRef, useCallback } from 'react';
 import { createSamaj } from '../services/storage';
 import { showSuccessToast, showErrorToast } from './ToastContent';
+import { UserPlus, Trash2 } from 'lucide-react';
 import HeroSection from './HeroSection';
+
+const emptyContactPerson = () => ({
+  name: '',
+  designation: '',
+  mobile: '',
+  email: '',
+  alternateMobile: '',
+});
 
 const emptyForm = {
   samajName: '',
@@ -12,11 +21,7 @@ const emptyForm = {
   district: '',
   city: '',
   pincode: '',
-  contactPersonName: '',
-  designation: '',
-  contactPersonMobile: '',
-  contactPersonEmail: '',
-  alternateMobile: '',
+  contactPersons: [emptyContactPerson()],
   registrationNumber: '',
   establishmentYear: '',
   website: '',
@@ -115,7 +120,27 @@ export default function AddSamajPage() {
   };
 
   const handleReset = () => {
-    setForm({ ...emptyForm });
+    setForm({ ...emptyForm, contactPersons: [emptyContactPerson()] });
+  };
+
+  const handleContactPersonChange = (index, field, value) => {
+    const updated = [...form.contactPersons];
+    updated[index] = { ...updated[index], [field]: value };
+    setForm((prev) => ({ ...prev, contactPersons: updated }));
+  };
+
+  const addContactPerson = () => {
+    setForm((prev) => ({
+      ...prev,
+      contactPersons: [...prev.contactPersons, emptyContactPerson()],
+    }));
+  };
+
+  const removeContactPerson = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      contactPersons: prev.contactPersons.filter((_, i) => i !== index),
+    }));
   };
 
   const handleFileSelect = useCallback((files) => {
@@ -186,17 +211,20 @@ export default function AddSamajPage() {
       showErrorToast('City Is Required.');
       return;
     }
-    if (!form.contactPersonName.trim()) {
-      showErrorToast('Contact Person Name is required.');
-      return;
-    }
-    if (!form.designation.trim()) {
-      showErrorToast('Designation Is Required.');
-      return;
-    }
-    if (!form.contactPersonMobile.trim()) {
-      showErrorToast('Contact Person Mobile Number is required.');
-      return;
+    for (let i = 0; i < form.contactPersons.length; i++) {
+      const cp = form.contactPersons[i];
+      if (!cp.name.trim()) {
+        showErrorToast(`Contact Person ${i + 1}: Name is required.`);
+        return;
+      }
+      if (!cp.designation.trim()) {
+        showErrorToast(`Contact Person ${i + 1}: Designation is required.`);
+        return;
+      }
+      if (!cp.mobile.trim()) {
+        showErrorToast(`Contact Person ${i + 1}: Mobile Number is required.`);
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -210,11 +238,13 @@ export default function AddSamajPage() {
         district: form.district,
         city: form.city,
         pincode: form.pincode,
-        contactPersonName: form.contactPersonName,
-        designation: form.designation,
-        contactPersonMobile: form.contactPersonMobile,
-        contactPersonEmail: form.contactPersonEmail,
-        alternateMobile: form.alternateMobile,
+        contactPersons: form.contactPersons.map((cp) => ({
+          name: cp.name,
+          designation: cp.designation,
+          mobile: cp.mobile,
+          email: cp.email,
+          alternateMobile: cp.alternateMobile,
+        })),
         registrationNumber: form.registrationNumber,
         establishmentYear: form.establishmentYear,
         website: form.website,
@@ -363,50 +393,90 @@ export default function AddSamajPage() {
               <SectionHeader icon="👤" title="Samaj Head / Contact Person" />
               <SectionCard title="Contact Person Details">
                 <div className="flex flex-col gap-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <Input
-                      label="Contact Person Name"
-                      required
-                      value={form.contactPersonName}
-                      onChange={handleChange}
-                      name="contactPersonName"
-                      placeholder="Enter Contact Person Name"
-                    />
-                    <Input
-                      label="Designation"
-                      required
-                      value={form.designation}
-                      onChange={handleChange}
-                      name="designation"
-                      placeholder="Enter Designation"
-                    />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">
+                      {form.contactPersons.length} contact person{form.contactPersons.length !== 1 ? 's' : ''}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={addContactPerson}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#C67A2D] to-[#A8651E] text-white hover:opacity-90 transition-all duration-200 cursor-pointer shadow-sm shadow-[#C67A2D]/20"
+                    >
+                      <UserPlus size={14} />
+                      Add Head
+                    </button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <Input
-                      label="Mobile Number"
-                      required
-                      value={form.contactPersonMobile}
-                      onChange={handleChange}
-                      name="contactPersonMobile"
-                      placeholder="Enter Mobile Number"
-                    />
-                    <Input
-                      label="Email Address"
-                      type="email"
-                      value={form.contactPersonEmail}
-                      onChange={handleChange}
-                      name="contactPersonEmail"
-                      placeholder="Enter Email Address"
-                    />
-                  </div>
-                  <Input
-                    label="Alternate Mobile"
-                    value={form.alternateMobile}
-                    onChange={handleChange}
-                    name="alternateMobile"
-                    placeholder="Enter Alternate Mobile (Optional)"
-                    className="max-w-md"
-                  />
+
+                  {form.contactPersons.map((cp, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 hover:border-gray-300 hover:shadow-sm animate-fade-in"
+                    >
+                      {idx > 0 && (
+                        <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#FFF8F0] to-white border-b border-gray-100">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C67A2D] to-[#A8651E] flex items-center justify-center shadow-sm">
+                              <span className="text-xs font-bold text-white">{idx + 1}</span>
+                            </div>
+                            <span className="text-sm font-semibold text-gray-700">
+                              Contact Person {idx + 1}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeContactPerson(idx)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 cursor-pointer"
+                          >
+                            <Trash2 size={13} />
+                            Remove
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="p-5 flex flex-col gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Input
+                            label="Full Name"
+                            required
+                            value={cp.name}
+                            onChange={(e) => handleContactPersonChange(idx, 'name', e.target.value)}
+                            placeholder="Enter full name"
+                          />
+                          <Input
+                            label="Designation"
+                            required
+                            value={cp.designation}
+                            onChange={(e) => handleContactPersonChange(idx, 'designation', e.target.value)}
+                            placeholder="Enter designation"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Input
+                            label="Mobile Number"
+                            required
+                            type="tel"
+                            value={cp.mobile}
+                            onChange={(e) => handleContactPersonChange(idx, 'mobile', e.target.value)}
+                            placeholder="Enter mobile number"
+                          />
+                          <Input
+                            label="Email Address"
+                            type="email"
+                            value={cp.email}
+                            onChange={(e) => handleContactPersonChange(idx, 'email', e.target.value)}
+                            placeholder="Enter email address"
+                          />
+                        </div>
+                        <Input
+                          label="Alternate Mobile"
+                          value={cp.alternateMobile}
+                          onChange={(e) => handleContactPersonChange(idx, 'alternateMobile', e.target.value)}
+                          placeholder="Enter alternate mobile (Optional)"
+                          className="max-w-md"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </SectionCard>
             </div>
