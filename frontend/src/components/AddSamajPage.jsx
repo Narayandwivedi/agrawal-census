@@ -20,8 +20,6 @@ const emptyForm = {
   registrationNumber: '',
   establishmentYear: '',
   website: '',
-  samajType: '',
-  affiliatedWith: '',
   remarks: '',
   documents: [],
 };
@@ -224,8 +222,6 @@ export default function AddSamajPage() {
         registrationNumber: form.registrationNumber,
         establishmentYear: form.establishmentYear,
         website: form.website,
-        samajType: form.samajType,
-        affiliatedWith: form.affiliatedWith,
         remarks: form.remarks,
         documents: form.documents,
         leaders: [],
@@ -449,20 +445,6 @@ export default function AddSamajPage() {
                     onChange={handleChange}
                     name="website"
                     placeholder="https://example.com"
-                  />
-                  <Input
-                    label="Samaj Type"
-                    value={form.samajType}
-                    onChange={handleChange}
-                    name="samajType"
-                    placeholder="e.g. Cultural, Religious"
-                  />
-                  <Input
-                    label="Affiliated With"
-                    value={form.affiliatedWith}
-                    onChange={handleChange}
-                    name="affiliatedWith"
-                    placeholder="e.g. Akhil Bharatiya Agrawal Samaj"
                   />
                 </div>
               </SectionCard>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createFamily } from '../services/storage';
 import { showSuccessToast, showErrorToast } from './ToastContent';
 import { Users, UserPlus, Trash2, MessageSquare } from 'lucide-react';
+import newFamilyHero from '../newfamilyhero.avif';
 
 const RELATION_OPTIONS = [
   'Self', 'Husband', 'Wife', 'Son', 'Daughter', 'Father', 'Mother',
@@ -251,7 +252,13 @@ export default function FamilyPage() {
   const today = getTodayDate();
 
   return (
-    <div className="bg-[#FFF8F0] min-h-screen px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+    <>
+      <img
+        src={newFamilyHero}
+        alt="Family Hero"
+        className="w-full h-auto block"
+      />
+      <div className="bg-[#FFF8F0] min-h-screen px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
       <div className="max-w-[1200px] mx-auto">
         <div className="text-center mb-12 pt-4">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#4A3520] leading-tight">
@@ -585,5 +592,6 @@ export default function FamilyPage() {
         </form>
       </div>
     </div>
+    </>
   );
 }
