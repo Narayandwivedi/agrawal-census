@@ -3,7 +3,7 @@ import mobileHeroImg from '../new agresen.avif';
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full md:min-h-[75vh] bg-[#FFF8F0] overflow-hidden">
+    <section className="relative w-full bg-[#FFF8F0] leading-none">
       <img
         src={mobileHeroImg}
         alt=""
@@ -12,9 +12,8 @@ export default function HeroSection() {
       <img
         src={heroImg}
         alt=""
-        className="hidden md:block md:absolute md:inset-0 md:w-full md:h-full md:object-contain md:object-top"
+        className="hidden md:block w-full h-auto object-contain"
       />
-      <div className="hidden md:block relative z-10 w-full h-full" />
     </section>
   );
 }
